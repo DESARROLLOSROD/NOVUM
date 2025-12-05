@@ -10,6 +10,10 @@ export interface ISequence extends Document {
   updatedAt: Date;
 }
 
+export interface ISequenceModel extends mongoose.Model<ISequence> {
+  getNextSequence(sequenceName: string): Promise<string>;
+}
+
 const SequenceSchema = new Schema<ISequence>({
   name: {
     type: String,
@@ -46,7 +50,7 @@ const SequenceSchema = new Schema<ISequence>({
 SequenceSchema.index({ name: 1, year: 1 }, { unique: true });
 
 // Método estático para obtener el siguiente número
-SequenceSchema.statics.getNextSequence = async function(sequenceName: string): Promise<string> {
+SequenceSchema.statics.getNextSequence = async function (sequenceName: string): Promise<string> {
   const currentYear = new Date().getFullYear();
 
   const sequence = await this.findOneAndUpdate(
@@ -63,4 +67,4 @@ SequenceSchema.statics.getNextSequence = async function(sequenceName: string): P
   return `${sequence.prefix}-${currentYear}-${paddedNumber}`;
 };
 
-export default mongoose.model<ISequence>('Sequence', SequenceSchema);
+export default mongoose.model<ISequence, ISequenceModel>('Sequence', SequenceSchema);

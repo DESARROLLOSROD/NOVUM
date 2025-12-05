@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     success: true,
     message: 'NOVUM API is running',
@@ -56,9 +56,11 @@ app.get('/health', (req, res) => {
 // Rutas de la API
 import authRoutes from './routes/authRoutes';
 import requisitionRoutes from './routes/requisitionRoutes';
+import purchaseOrderRoutes from './routes/purchaseOrderRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/requisitions', requisitionRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
 
 // Manejo de rutas no encontradas
 app.use(notFound);

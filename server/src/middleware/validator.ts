@@ -89,3 +89,62 @@ export const paginationValidation: ValidationChain[] = [
     .isInt({ min: 1, max: 100 })
     .withMessage('El límite debe estar entre 1 y 100'),
 ];
+
+export const createPurchaseOrderValidation: ValidationChain[] = [
+  body('supplier')
+    .isMongoId()
+    .withMessage('ID de proveedor inválido'),
+  body('expectedDeliveryDate')
+    .isISO8601()
+    .withMessage('Fecha de entrega inválida')
+    .custom((value) => {
+      const date = new Date(value);
+      const now = new Date();
+      if (date < now) {
+        throw new Error('La fecha de entrega debe ser futura');
+      }
+      return true;
+    }),
+  body('deliveryAddress')
+    .notEmpty()
+    .withMessage('La dirección de entrega es requerida')
+    .trim(),
+  body('paymentTerms')
+    .notEmpty()
+    .withMessage('Los términos de pago son requeridos')
+    .trim(),
+  body('items')
+    .isArray({ min: 1 })
+    .withMessage('Debe incluir al menos un artículo'),
+  body('items.*.description')
+    .notEmpty()
+    .withMessage('La descripción del artículo es requerida'),
+  body('items.*.quantity')
+    .isFloat({ min: 0.01 })
+    .withMessage('La cantidad debe ser mayor a 0'),
+  body('items.*.unitPrice')
+    .isFloat({ min: 0 })
+    .withMessage('El precio unitario debe ser mayor o igual a 0'),
+];
+
+export const updatePurchaseOrderValidation: ValidationChain[] = [
+  body('supplier')
+    .optional()
+    .isMongoId()
+    .withMessage('ID de proveedor inválido'),
+  body('expectedDeliveryDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Fecha de entrega inválida'),
+  body('deliveryAddress')
+    .optional()
+    .trim(),
+  body('paymentTerms')
+    .optional()
+    .trim(),
+  body('items')
+    .optional()
+    .isArray({ min: 1 })
+    .withMessage('Debe incluir al menos un artículo'),
+];
+

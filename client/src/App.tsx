@@ -55,6 +55,8 @@ const AppRoutes = () => {
         <Route path="requisitions/new" element={<CreateRequisition />} />
         <Route path="requisitions/:id" element={<RequisitionDetail />} />
         <Route path="purchase-orders" element={<PurchaseOrderList />} />
+        <Route path="purchase-orders/new" element={<div>Create Purchase Order Page</div>} />
+        <Route path="purchase-orders/:id" element={<div>Purchase Order Detail Page</div>} />
       </Route>
     </Routes>
   );

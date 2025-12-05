@@ -1,32 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Package, Plus, Eye } from 'lucide-react';
-import api from '@/services/api';
-
-interface PurchaseOrder {
-  id: number;
-  orderNumber: string;
-  requisitionId: number;
-  vendorId: number;
-  status: string;
-  totalAmount: number;
-  createdAt: string;
-  vendor?: {
-    name: string;
-  };
-  requisition?: {
-    requisitionNumber: string;
-  };
-}
+import { getPurchaseOrders } from '@/services/purchaseOrderService';
 
 const PurchaseOrderList = () => {
-  const { data: purchaseOrders, isLoading, error } = useQuery<PurchaseOrder[]>({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['purchaseOrders'],
-    queryFn: async () => {
-      const response = await api.get('/purchase-orders');
-      return response.data;
-    },
+    queryFn: () => getPurchaseOrders({ page: 1, limit: 50 }),
   });
+
+  const purchaseOrders = data?.data || [];
 
   const getStatusBadgeClass = (status: string) => {
     const baseClasses = 'px-2 py-1 text-xs font-semibold rounded-full';
@@ -51,9 +34,10 @@ const PurchaseOrderList = () => {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       draft: 'Borrador',
-      pending: 'Pendiente',
+      pending_approval: 'Pendiente Aprobación',
       approved: 'Aprobada',
       sent: 'Enviada',
+      partially_received: 'Parcialmente Recibida',
       received: 'Recibida',
       cancelled: 'Cancelada',
     };
@@ -135,11 +119,11 @@ const PurchaseOrderList = () => {
                       </div>
                       <div className="mt-2 flex items-center text-sm text-gray-500">
                         <span>
-                          Proveedor: {order.vendor?.name || 'Sin proveedor'}
+                          Proveedor: {order.supplier?.name || 'Sin proveedor'}
                         </span>
                         <span className="mx-2">•</span>
                         <span>
-                          Requisición: {order.requisition?.requisitionNumber || 'N/A'}
+                          Comprador: {order.buyer?.firstName} {order.buyer?.lastName}
                         </span>
                       </div>
                       <div className="mt-1 flex items-center text-sm text-gray-500">
@@ -151,7 +135,7 @@ const PurchaseOrderList = () => {
                         </span>
                         <span className="mx-2">•</span>
                         <span>
-                          Creada: {new Date(order.createdAt).toLocaleDateString('es-MX')}
+                          Creada: {new Date(order.orderDate).toLocaleDateString('es-MX')}
                         </span>
                       </div>
                     </div>
