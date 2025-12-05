@@ -1,0 +1,76 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
+import RequisitionList from '@/pages/RequisitionList';
+import RequisitionDetail from '@/pages/RequisitionDetail';
+import CreateRequisition from '@/pages/CreateRequisition';
+import PurchaseOrderList from '@/pages/PurchaseOrderList';
+import Layout from '@/components/Layout';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
+const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/" /> : <Login />}
+      />
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <Layout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="requisitions" element={<RequisitionList />} />
+        <Route path="requisitions/new" element={<CreateRequisition />} />
+        <Route path="requisitions/:id" element={<RequisitionDetail />} />
+        <Route path="purchase-orders" element={<PurchaseOrderList />} />
+      </Route>
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <AppRoutes />
+          <Toaster position="top-right" />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
