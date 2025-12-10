@@ -73,7 +73,7 @@ const RequisitionList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Número
+                    Folio
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Título
@@ -101,7 +101,7 @@ const RequisitionList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {data?.data.map((req) => (
                   <tr key={req.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600">
                       {req.requisitionNumber}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
@@ -119,12 +119,11 @@ const RequisitionList = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`badge ${
-                        req.priority === 'urgent' ? 'badge-danger' :
-                        req.priority === 'high' ? 'badge-warning' :
-                        req.priority === 'medium' ? 'badge-info' :
-                        'badge-gray'
-                      }`}>
+                      <span className={`badge ${req.priority === 'urgent' ? 'badge-danger' :
+                          req.priority === 'high' ? 'badge-warning' :
+                            req.priority === 'medium' ? 'badge-info' :
+                              'badge-gray'
+                        }`}>
                         {req.priority}
                       </span>
                     </td>

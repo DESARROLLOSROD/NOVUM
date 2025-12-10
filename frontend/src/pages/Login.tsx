@@ -86,14 +86,14 @@ const Login = () => {
             )}
           </button>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 font-semibold mb-2">Usuarios de prueba:</p>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>Admin: admin@novum.com / Admin123!</p>
-              <p>Compras: compras@novum.com / Compras123!</p>
-              <p>Solicitante: solicitante@novum.com / Solicitante123!</p>
+          {import.meta.env.DEV && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600 font-semibold mb-2">Ambiente de desarrollo</p>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>Consulta con el administrador para obtener credenciales de acceso</p>
+              </div>
             </div>
-          </div>
+          )}
         </form>
       </div>
     </div>

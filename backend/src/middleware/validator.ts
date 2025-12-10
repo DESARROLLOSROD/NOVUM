@@ -135,7 +135,16 @@ export const updatePurchaseOrderValidation: ValidationChain[] = [
   body('expectedDeliveryDate')
     .optional()
     .isISO8601()
-    .withMessage('Fecha de entrega inválida'),
+    .withMessage('Fecha de entrega inválida')
+    .custom((value) => {
+      const deliveryDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (deliveryDate < today) {
+        throw new Error('La fecha de entrega debe ser futura');
+      }
+      return true;
+    }),
   body('deliveryAddress')
     .optional()
     .trim(),

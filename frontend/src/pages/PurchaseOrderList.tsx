@@ -109,10 +109,13 @@ const PurchaseOrderList = () => {
                 <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-4">
-                        <h3 className="text-lg font-medium text-primary-600 truncate">
-                          {order.orderNumber}
-                        </h3>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Folio</span>
+                          <h3 className="text-lg font-bold text-primary-600">
+                            {order.orderNumber}
+                          </h3>
+                        </div>
                         <span className={getStatusBadgeClass(order.status)}>
                           {getStatusLabel(order.status)}
                         </span>

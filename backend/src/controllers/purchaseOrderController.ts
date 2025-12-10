@@ -43,10 +43,22 @@ export const createPurchaseOrder = async (req: AuthRequest, res: Response): Prom
             const reqs = await Requisition.find({
                 _id: { $in: requisitions },
                 status: 'approved',
-            });
+            }).populate('department');
 
             if (reqs.length !== requisitions.length) {
                 throw new AppError('Algunas requisiciones no están aprobadas o no existen', 400);
+            }
+
+            // Verificar que todas las requisiciones sean del mismo departamento
+            const departments = new Set(reqs.map(r => r.department?.toString()));
+            if (departments.size > 1) {
+                throw new AppError('No se pueden consolidar requisiciones de diferentes departamentos', 400);
+            }
+
+            // Verificar que el usuario tenga acceso al departamento
+            const reqDepartment = reqs[0].department?.toString();
+            if (user.role !== 'admin' && user.role !== 'purchasing' && reqDepartment !== user.department?.toString()) {
+                throw new AppError('No tienes permiso para crear órdenes de compra para estas requisiciones', 403);
             }
         }
 

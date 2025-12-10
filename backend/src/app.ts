@@ -18,8 +18,21 @@ const app: Application = express();
 
 // Middlewares de seguridad
 app.use(helmet());
+
+// CORS configuration
+const allowedOrigins = process.env.CLIENT_URL?.split(',') || ['http://localhost:5173'];
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 

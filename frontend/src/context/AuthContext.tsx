@@ -45,8 +45,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(user);
       setToken(token);
+      // Only store token in localStorage, not user data
+      // User data will be fetched on each session using the token
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
 
       toast.success(`Bienvenido, ${user.firstName}!`);
     } catch (error) {

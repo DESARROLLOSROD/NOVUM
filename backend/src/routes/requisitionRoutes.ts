@@ -43,6 +43,7 @@ router.post(
 
 router.post(
   '/:id/cancel',
+  authorize('requester', 'admin'),
   idValidation,
   cancelRequisition
 );
