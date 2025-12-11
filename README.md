@@ -1,6 +1,20 @@
-# NOVUM - Sistema de Gestión de Requisiciones y Compras
+# 🚀 NOVUM - Sistema de Gestión de Requisiciones y Compras
 
-Sistema integral para la gestión de requisiciones, órdenes de compra y recepción de mercancías con flujos de aprobación multinivel.
+Sistema integral enterprise para la gestión de requisiciones, órdenes de compra y recepción de mercancías con flujos de aprobación multinivel.
+
+> **Versión:** 1.0.0
+> **Estado:** ✅ Producción
+> **Última actualización:** Diciembre 10, 2024
+
+---
+
+## 📚 Documentación Adicional
+
+- 📊 [**Plan de Comercialización**](PLAN_COMERCIALIZACION.md) - Estrategia de negocio, pricing, roadmap comercial
+- 🗺️ [**Features Roadmap**](FEATURES_ROADMAP.md) - Roadmap detallado de funcionalidades
+- 🔧 [**Mejoras Técnicas**](MEJORAS_TECNICAS.md) - Deuda técnica y mejoras de seguridad
+
+---
 
 ## Características Principales
 
@@ -80,14 +94,14 @@ npm run install:all
 
 ### 4. Configurar variables de entorno
 
-#### Backend (server/.env)
+#### Backend (backend/.env)
 
 ```bash
-cd server
+cd backend
 cp .env.example .env
 ```
 
-Editar `server/.env`:
+Editar `backend/.env`:
 
 ```env
 # MongoDB Atlas - REEMPLAZAR CON TU STRING DE CONEXIÓN
@@ -109,14 +123,14 @@ RATE_LIMIT_MAX_REQUESTS=100
 LOG_LEVEL=info
 ```
 
-#### Frontend (client/.env)
+#### Frontend (frontend/.env)
 
 ```bash
-cd ../client
+cd ../frontend
 cp .env.example .env
 ```
 
-Editar `client/.env`:
+Editar `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -167,10 +181,10 @@ Esto iniciará:
 
 ```bash
 # Terminal 1 - Backend
-npm run dev:server
+npm run dev:backend
 
 # Terminal 2 - Frontend
-npm run dev:client
+npm run dev:frontend
 ```
 
 ## Producción
@@ -199,7 +213,9 @@ npm start
 
 ```
 NOVUM/
-├── server/                 # Backend Express + TypeScript
+├── .claude/               # Claude AI configuration
+│
+├── backend/               # Backend Express + TypeScript
 │   ├── src/
 │   │   ├── config/        # Configuración (DB, Logger)
 │   │   ├── controllers/   # Controladores
@@ -207,12 +223,13 @@ NOVUM/
 │   │   ├── models/        # Modelos Mongoose
 │   │   ├── routes/        # Rutas de la API
 │   │   ├── seeds/         # Datos de prueba
+│   │   ├── scripts/       # Scripts de utilidad
 │   │   ├── utils/         # Utilidades
 │   │   └── app.ts         # Entrada principal
 │   ├── logs/              # Archivos de log
 │   └── package.json
 │
-├── client/                # Frontend React + TypeScript
+├── frontend/              # Frontend React + TypeScript
 │   ├── src/
 │   │   ├── components/    # Componentes reutilizables
 │   │   ├── context/       # Context API (Auth)
@@ -220,11 +237,19 @@ NOVUM/
 │   │   ├── pages/         # Páginas/Vistas
 │   │   ├── services/      # API services
 │   │   ├── types/         # TypeScript types
+│   │   ├── utils/         # Utilidades
 │   │   ├── App.tsx        # Componente principal
 │   │   └── main.tsx       # Entrada
 │   └── package.json
 │
-└── package.json           # Scripts raíz
+├── mobile/                # React Native App (Planificado)
+│   └── README.md          # Especificaciones de app móvil
+│
+├── PLAN_COMERCIALIZACION.md   # Estrategia comercial
+├── FEATURES_ROADMAP.md        # Roadmap de funcionalidades
+├── MEJORAS_TECNICAS.md        # Mejoras técnicas y seguridad
+├── README.md                  # Este archivo
+└── package.json               # Scripts raíz
 ```
 
 ## API Endpoints
@@ -328,28 +353,32 @@ El sistema utiliza índices optimizados para MongoDB Atlas:
 
 ```bash
 # Desarrollo
-npm run dev              # Servidor + Cliente
-npm run dev:server       # Solo servidor
-npm run dev:client       # Solo cliente
+npm run dev              # Backend + Frontend
+npm run dev:backend      # Solo backend
+npm run dev:frontend     # Solo frontend
 
 # Build
 npm run build            # Build completo
-npm run build:server     # Build servidor
-npm run build:client     # Build cliente
+npm run build:backend    # Build backend
+npm run build:frontend   # Build frontend
 
 # Producción
-npm start               # Iniciar servidor
+npm start                # Iniciar backend
 
 # Base de datos
-npm run seed            # Cargar datos de prueba
-npm run seed:reset      # Limpiar base de datos
+npm run seed             # Cargar datos de prueba
+npm run seed:reset       # Limpiar base de datos
 
 # Testing y Calidad
-npm run test            # Tests
-npm run lint            # Linting
+npm run test             # Todos los tests
+npm run test:backend     # Tests backend
+npm run test:frontend    # Tests frontend
+npm run lint             # Linting completo
+npm run lint:backend     # Lint backend
+npm run lint:frontend    # Lint frontend
 
 # Instalación
-npm run install:all     # Instalar todas las dependencias
+npm run install:all      # Instalar todas las dependencias
 ```
 
 ## Solución de Problemas
@@ -365,10 +394,10 @@ npm run install:all     # Instalar todas las dependencias
 Si el puerto 5000 o 5173 está ocupado:
 
 ```bash
-# Cambiar en server/.env
+# Cambiar en backend/.env
 PORT=3000
 
-# Cambiar en client/.env
+# Cambiar en frontend/.env
 VITE_API_URL=http://localhost:3000/api
 ```
 
@@ -380,8 +409,8 @@ npm cache clean --force
 
 # Eliminar node_modules y reinstalar
 rm -rf node_modules package-lock.json
-rm -rf server/node_modules server/package-lock.json
-rm -rf client/node_modules client/package-lock.json
+rm -rf backend/node_modules backend/package-lock.json
+rm -rf frontend/node_modules frontend/package-lock.json
 
 npm run install:all
 ```

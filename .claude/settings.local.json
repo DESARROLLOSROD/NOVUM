@@ -6,7 +6,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(curl:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

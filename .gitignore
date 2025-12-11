@@ -42,3 +42,12 @@ Thumbs.db
 *.tmp
 .cache/
 temp/
+
+# Development output logs
+backend-startup.log
+dev-output.log
+
+# Mobile (when implemented)
+mobile/android/
+mobile/ios/
+mobile/.expo/
