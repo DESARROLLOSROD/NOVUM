@@ -59,6 +59,7 @@ const UserForm = () => {
                         firstName: user.firstName,
                         lastName: user.lastName,
                         email: user.email,
+                        password: '', // Always initialize password
                         employeeCode: user.employeeCode,
                         role: user.role,
                         department: user.department?.id || (typeof user.department === 'string' ? user.department : '') || '',
