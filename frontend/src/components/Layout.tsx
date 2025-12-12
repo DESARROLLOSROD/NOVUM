@@ -40,9 +40,36 @@ const Layout = () => {
                     to="/purchase-orders"
                     className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-primary-500"
                   >
-                    <Package className="w-4 h-4 mr-2" />
+                    <FileText className="w-4 h-4 mr-2" />
                     Órdenes de Compra
                   </Link>
+                )}
+                {(user?.role === 'admin' || user?.role === 'warehouse' || user?.role === 'purchasing') && (
+                  <Link
+                    to="/products"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-primary-500"
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    Productos
+                  </Link>
+                )}
+                {user?.role === 'admin' && (
+                  <>
+                    <Link
+                      to="/departments"
+                      className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-primary-500"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Departamentos
+                    </Link>
+                    <Link
+                      to="/users"
+                      className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-primary-500"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Usuarios
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

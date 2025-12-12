@@ -8,6 +8,12 @@ import RequisitionList from '@/pages/RequisitionList';
 import RequisitionDetail from '@/pages/RequisitionDetail';
 import CreateRequisition from '@/pages/CreateRequisition';
 import PurchaseOrderList from '@/pages/PurchaseOrderList';
+import UserList from '@/pages/Users/UserList';
+import UserForm from '@/pages/Users/UserForm';
+import DepartmentList from '@/pages/Departments/DepartmentList';
+import DepartmentForm from '@/pages/Departments/DepartmentForm';
+import ProductList from '@/pages/Products/ProductList';
+import ProductForm from '@/pages/Products/ProductForm';
 import Layout from '@/components/Layout';
 
 const queryClient = new QueryClient({
@@ -51,12 +57,31 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Dashboard />} />
+
+        {/* Requisitions */}
         <Route path="requisitions" element={<RequisitionList />} />
         <Route path="requisitions/new" element={<CreateRequisition />} />
         <Route path="requisitions/:id" element={<RequisitionDetail />} />
+
+        {/* Purchase Orders */}
         <Route path="purchase-orders" element={<PurchaseOrderList />} />
         <Route path="purchase-orders/new" element={<div>Create Purchase Order Page</div>} />
         <Route path="purchase-orders/:id" element={<div>Purchase Order Detail Page</div>} />
+
+        {/* Users */}
+        <Route path="users" element={<UserList />} />
+        <Route path="users/new" element={<UserForm />} />
+        <Route path="users/:id" element={<UserForm />} />
+
+        {/* Departments */}
+        <Route path="departments" element={<DepartmentList />} />
+        <Route path="departments/new" element={<DepartmentForm />} />
+        <Route path="departments/:id" element={<DepartmentForm />} />
+
+        {/* Products */}
+        <Route path="products" element={<ProductList />} />
+        <Route path="products/new" element={<ProductForm />} />
+        <Route path="products/:id" element={<ProductForm />} />
       </Route>
     </Routes>
   );
