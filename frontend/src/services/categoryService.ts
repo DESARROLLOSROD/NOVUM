@@ -11,9 +11,20 @@ export interface Category {
     isActive: boolean;
 }
 
+export interface CreateCategoryData {
+    code: string;
+    name: string;
+    parent?: string;
+}
+
 export const categoryService = {
     getAll: async () => {
         const response = await api.get<ApiResponse<Category[]>>('/categories');
+        return response.data;
+    },
+
+    create: async (data: CreateCategoryData) => {
+        const response = await api.post<ApiResponse<Category>>('/categories', data);
         return response.data;
     }
 };

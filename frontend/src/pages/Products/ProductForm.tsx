@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService, CreateProductData } from '@/services/productService';
-import { categoryService } from '@/services/categoryService';
-import { supplierService } from '@/services/supplierService';
-import { ArrowLeft, Save } from 'lucide-react';
+import { categoryService, CreateCategoryData } from '@/services/categoryService';
+import { supplierService, CreateSupplierData } from '@/services/supplierService';
+import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProductForm = () => {
@@ -12,6 +12,14 @@ const ProductForm = () => {
     const { id } = useParams();
     const isEditing = !!id;
     const queryClient = useQueryClient();
+
+    // Modals state
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [showSupplierModal, setShowSupplierModal] = useState(false);
+
+    // New item form state
+    const [newCategory, setNewCategory] = useState<CreateCategoryData>({ code: '', name: '' });
+    const [newSupplier, setNewSupplier] = useState<CreateSupplierData>({ code: '', name: '', taxId: '', contactName: '' });
 
     const [formData, setFormData] = useState<CreateProductData>({
         code: '',
@@ -113,6 +121,36 @@ const ProductForm = () => {
         },
     });
 
+    // Validations to keep consistent with existing behavior
+    const createCategoryMutation = useMutation({
+        mutationFn: (data: CreateCategoryData) => categoryService.create(data),
+        onSuccess: (response) => {
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            toast.success('Categoría creada exitosamente');
+            setFormData(prev => ({ ...prev, category: response.data.id }));
+            setShowCategoryModal(false);
+            setNewCategory({ code: '', name: '' });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Error al crear categoría');
+        },
+    });
+
+    const createSupplierMutation = useMutation({
+        mutationFn: (data: CreateSupplierData) => supplierService.create(data),
+        onSuccess: (response) => {
+            queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+            toast.success('Proveedor creado exitosamente');
+            setFormData(prev => ({ ...prev, preferredSupplier: response.data.id }));
+            setShowSupplierModal(false);
+            setNewSupplier({ code: '', name: '', taxId: '', contactName: '' });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Error al crear proveedor');
+        },
+    });
+
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEditing) {
@@ -121,6 +159,17 @@ const ProductForm = () => {
             createMutation.mutate(formData);
         }
     };
+
+    const handleCategorySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        createCategoryMutation.mutate(newCategory);
+    };
+
+    const handleSupplierSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        createSupplierMutation.mutate(newSupplier);
+    };
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -199,41 +248,61 @@ const ProductForm = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Categoría *
                         </label>
-                        <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleChange}
-                            className="input"
-                            required
-                        >
-                            <option value="">Seleccione una categoría</option>
-                            {// @ts-ignore
-                                categories?.data.map((cat: any) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                        </select>
+                        <div className="flex gap-2">
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                className="input flex-1"
+                                required
+                            >
+                                <option value="">Seleccione una categoría</option>
+                                {// @ts-ignore
+                                    categories?.data.map((cat: any) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={() => setShowCategoryModal(true)}
+                                className="btn btn-secondary px-3"
+                                title="Nueva Categoría"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Proveedor Preferido
                         </label>
-                        <select
-                            name="preferredSupplier"
-                            value={formData.preferredSupplier}
-                            onChange={handleChange}
-                            className="input"
-                        >
-                            <option value="">Seleccione proveedor (opcional)</option>
-                            {// @ts-ignore
-                                suppliers?.data.map((sup: any) => (
-                                    <option key={sup.id} value={sup.id}>
-                                        {sup.name}
-                                    </option>
-                                ))}
-                        </select>
+                        <div className="flex gap-2">
+                            <select
+                                name="preferredSupplier"
+                                value={formData.preferredSupplier}
+                                onChange={handleChange}
+                                className="input flex-1"
+                            >
+                                <option value="">Seleccione proveedor (opcional)</option>
+                                {// @ts-ignore
+                                    suppliers?.data.map((sup: any) => (
+                                        <option key={sup.id} value={sup.id}>
+                                            {sup.name}
+                                        </option>
+                                    ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={() => setShowSupplierModal(true)}
+                                className="btn btn-secondary px-3"
+                                title="Nuevo Proveedor"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Pricing & Stock */}
@@ -361,6 +430,114 @@ const ProductForm = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Category Modal */}
+            {showCategoryModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold">Nueva Categoría</h3>
+                            <button onClick={() => setShowCategoryModal(false)} className="text-gray-500 hover:text-gray-700">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCategorySubmit}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Código</label>
+                                    <input
+                                        type="text"
+                                        value={newCategory.code}
+                                        onChange={(e) => setNewCategory({ ...newCategory, code: e.target.value })}
+                                        className="input"
+                                        required
+                                        placeholder="CAT-01"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                    <input
+                                        type="text"
+                                        value={newCategory.name}
+                                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                                        className="input"
+                                        required
+                                        placeholder="Oficina"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end mt-6 gap-2">
+                                <button type="button" onClick={() => setShowCategoryModal(false)} className="btn btn-secondary">Cancelar</button>
+                                <button type="submit" className="btn btn-primary" disabled={createCategoryMutation.isPending}>Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Supplier Modal */}
+            {showSupplierModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold">Nuevo Proveedor</h3>
+                            <button onClick={() => setShowSupplierModal(false)} className="text-gray-500 hover:text-gray-700">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSupplierSubmit}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Código</label>
+                                    <input
+                                        type="text"
+                                        value={newSupplier.code}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, code: e.target.value })}
+                                        className="input"
+                                        required
+                                        placeholder="PROV-01"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                    <input
+                                        type="text"
+                                        value={newSupplier.name}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
+                                        className="input"
+                                        required
+                                        placeholder="Proveedor SA de CV"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">RFC / Tax ID</label>
+                                    <input
+                                        type="text"
+                                        value={newSupplier.taxId}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, taxId: e.target.value })}
+                                        className="input"
+                                        placeholder="XAXX010101000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Contacto</label>
+                                    <input
+                                        type="text"
+                                        value={newSupplier.contactName}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, contactName: e.target.value })}
+                                        className="input"
+                                        placeholder="Juan Pérez"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end mt-6 gap-2">
+                                <button type="button" onClick={() => setShowSupplierModal(false)} className="btn btn-secondary">Cancelar</button>
+                                <button type="submit" className="btn btn-primary" disabled={createSupplierMutation.isPending}>Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
