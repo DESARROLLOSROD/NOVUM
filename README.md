@@ -1,10 +1,10 @@
 # 🚀 NOVUM - Sistema de Gestión de Requisiciones y Compras
 
-Sistema integral enterprise para la gestión de requisiciones, órdenes de compra y recepción de mercancías con flujos de aprobación multinivel.
+Sistema integral enterprise para la gestión del ciclo de vida de compras: desde la requisición de materiales por parte de los empleados, pasando por flujos de aprobación multinivel, hasta la generación de órdenes de compra y la recepción de mercancías en almacén.
 
 > **Versión:** 1.0.0
-> **Estado:** ✅ Producción
-> **Última actualización:** Diciembre 10, 2024
+> **Estado:** ✅ Producción (Fase 1 Completa)
+> **Última actualización:** Diciembre 12, 2024
 
 ---
 
@@ -16,440 +16,132 @@ Sistema integral enterprise para la gestión de requisiciones, órdenes de compr
 
 ---
 
-## Características Principales
-
-- Gestión completa de requisiciones con flujo de aprobación multinivel
-- Sistema de autenticación JWT con roles y permisos
-- Gestión de órdenes de compra y proveedores
-- Recepción de mercancías y control de almacén
-- Dashboard con estadísticas en tiempo real
-- Sistema de secuencias automáticas
-- Rate limiting y seguridad robusta
-- Logging estructurado con Winston
-- Base de datos MongoDB Atlas optimizada
-- Frontend React con TypeScript y Tailwind CSS
-
-## Tecnologías
-
-### Backend
-- Node.js + Express
-- TypeScript
-- MongoDB Atlas + Mongoose
-- JWT para autenticación
-- Express Validator
-- Helmet para seguridad
-- Winston para logging
-- Rate Limiting
-
-### Frontend
-- React 18
-- TypeScript
-- Vite
-- React Router DOM
-- TanStack Query (React Query)
-- Zustand
-- Tailwind CSS
-- Axios
-- React Hook Form + Zod
-
-## Requisitos Previos
-
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- Cuenta de MongoDB Atlas
-- Git
-
-## Instalación
-
-### 1. Clonar el repositorio
-
-```bash
-git clone <url-del-repositorio>
-cd NOVUM
-```
-
-### 2. Instalar dependencias
-
-```bash
-# Instalar todas las dependencias (root, server y client)
-npm run install:all
-```
-
-### 3. Configurar MongoDB Atlas
-
-1. Crear una cuenta en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Crear un nuevo cluster (free tier funciona perfectamente)
-3. Crear un usuario de base de datos:
-   - Ve a Database Access
-   - Add New Database User
-   - Crea usuario y contraseña
-4. Configurar acceso de red:
-   - Ve a Network Access
-   - Add IP Address
-   - Selecciona "Allow Access from Anywhere" (0.0.0.0/0) para desarrollo
-5. Obtener string de conexión:
-   - Ve a Database > Connect
-   - Choose "Connect your application"
-   - Copia el connection string
-
-### 4. Configurar variables de entorno
-
-#### Backend (backend/.env)
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Editar `backend/.env`:
-
-```env
-# MongoDB Atlas - REEMPLAZAR CON TU STRING DE CONEXIÓN
-MONGODB_URI=mongodb+srv://tu-usuario:tu-password@cluster.mongodb.net/novum?retryWrites=true&w=majority
-
-# Server
-PORT=5000
-NODE_ENV=development
-
-# JWT - CAMBIAR EN PRODUCCIÓN
-JWT_SECRET=tu-secreto-super-seguro-cambiar-en-produccion
-JWT_EXPIRE=7d
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# Logging
-LOG_LEVEL=info
-```
-
-#### Frontend (frontend/.env)
-
-```bash
-cd ../frontend
-cp .env.example .env
-```
-
-Editar `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-### 5. Cargar datos de prueba
-
-```bash
-# Desde la raíz del proyecto
-npm run seed
-```
-
-Esto creará:
-- 8 departamentos
-- 8 usuarios de prueba con diferentes roles
-- Categorías jerárquicas
-- 3 proveedores
-- Configuraciones de aprobación
-- Secuencias iniciales
-
-## Usuarios de Prueba
-
-Una vez ejecutado el seed, puedes acceder con estos usuarios:
-
-| Email | Password | Rol |
-|-------|----------|-----|
-| admin@novum.com | Admin123! | Administrador |
-| compras@novum.com | Compras123! | Compras |
-| finanzas@novum.com | Finanzas123! | Finanzas |
-| aprobador@novum.com | Aprobador123! | Aprobador |
-| almacen@novum.com | Almacen123! | Almacén |
-| solicitante@novum.com | Solicitante123! | Solicitante |
-
-## Ejecución
-
-### Modo Desarrollo
-
-```bash
-# Desde la raíz - Ejecuta servidor y cliente simultáneamente
-npm run dev
-```
-
-Esto iniciará:
-- Backend en http://localhost:5000
-- Frontend en http://localhost:5173
-
-### Ejecutar por separado
-
-```bash
-# Terminal 1 - Backend
-npm run dev:backend
-
-# Terminal 2 - Frontend
-npm run dev:frontend
-```
-
-## Producción
-
-### Build
-
-```bash
-# Build completo
-npm run build
-
-# Build solo backend
-npm run build:server
-
-# Build solo frontend
-npm run build:client
-```
-
-### Desplegar
-
-```bash
-# Iniciar servidor en producción
-npm start
-```
-
-## Estructura del Proyecto
-
-```
-NOVUM/
-├── .claude/               # Claude AI configuration
-│
-├── backend/               # Backend Express + TypeScript
-│   ├── src/
-│   │   ├── config/        # Configuración (DB, Logger)
-│   │   ├── controllers/   # Controladores
-│   │   ├── middleware/    # Middleware (Auth, Error, Validation)
-│   │   ├── models/        # Modelos Mongoose
-│   │   ├── routes/        # Rutas de la API
-│   │   ├── seeds/         # Datos de prueba
-│   │   ├── scripts/       # Scripts de utilidad
-│   │   ├── utils/         # Utilidades
-│   │   └── app.ts         # Entrada principal
-│   ├── logs/              # Archivos de log
-│   └── package.json
-│
-├── frontend/              # Frontend React + TypeScript
-│   ├── src/
-│   │   ├── components/    # Componentes reutilizables
-│   │   ├── context/       # Context API (Auth)
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── pages/         # Páginas/Vistas
-│   │   ├── services/      # API services
-│   │   ├── types/         # TypeScript types
-│   │   ├── utils/         # Utilidades
-│   │   ├── App.tsx        # Componente principal
-│   │   └── main.tsx       # Entrada
-│   └── package.json
-│
-├── mobile/                # React Native App (Planificado)
-│   └── README.md          # Especificaciones de app móvil
-│
-├── PLAN_COMERCIALIZACION.md   # Estrategia comercial
-├── FEATURES_ROADMAP.md        # Roadmap de funcionalidades
-├── MEJORAS_TECNICAS.md        # Mejoras técnicas y seguridad
-├── README.md                  # Este archivo
-└── package.json               # Scripts raíz
-```
-
-## API Endpoints
-
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `GET /api/auth/me` - Obtener usuario actual
-- `PUT /api/auth/update-password` - Actualizar contraseña
-- `POST /api/auth/register` - Registrar usuario (admin)
-
-### Requisiciones
-- `GET /api/requisitions` - Listar requisiciones
-- `POST /api/requisitions` - Crear requisición
-- `GET /api/requisitions/:id` - Detalle de requisición
-- `POST /api/requisitions/:id/approve` - Aprobar requisición
-- `POST /api/requisitions/:id/reject` - Rechazar requisición
-- `POST /api/requisitions/:id/cancel` - Cancelar requisición
-
-## Roles y Permisos
-
-### Admin
-- Acceso total al sistema
-- Gestión de usuarios
-- Configuración de aprobaciones
-- Vista de todas las requisiciones
-
-### Requester (Solicitante)
-- Crear requisiciones
-- Ver sus requisiciones
-- Cancelar requisiciones propias
-
-### Approver (Aprobador)
-- Aprobar/rechazar requisiciones de su departamento
-- Ver requisiciones pendientes de aprobación
-- Límite de aprobación configurable
-
-### Finance (Finanzas)
-- Aprobar requisiciones de alto monto
-- Segundo nivel de aprobación
-- Vista de todas las requisiciones
-
-### Purchasing (Compras)
-- Crear órdenes de compra
-- Gestionar proveedores
-- Ver todas las requisiciones aprobadas
-
-### Warehouse (Almacén)
-- Registrar recepción de mercancías
-- Gestionar inventario
-
-## Flujo de Aprobación
-
-El sistema implementa un flujo de aprobación multinivel basado en montos:
-
-1. **Hasta $10,000**
-   - Nivel 1: Jefe de Departamento
-
-2. **$10,001 - $50,000**
-   - Nivel 1: Jefe de Departamento
-   - Nivel 2: Gerente de Finanzas
-
-3. **Mayor a $50,000**
-   - Nivel 1: Jefe de Departamento
-   - Nivel 2: Gerente de Finanzas
-   - Nivel 3: Director General
-
-## Seguridad
-
-- Autenticación JWT con tokens de 7 días
-- Contraseñas hasheadas con bcrypt (12 rounds)
-- Rate limiting por endpoint
-- Validación de datos con express-validator
-- Helmet para headers de seguridad
-- CORS configurado
-- Sanitización de inputs
-- Logging de accesos y errores
-
-## Índices de MongoDB
-
-El sistema utiliza índices optimizados para MongoDB Atlas:
-
-### Requisitions
-- `requisitionNumber` (único)
-- `status + department`
-- `requester + status + requestDate`
-- `status + priority + requestDate`
-- Índice de texto en `title`, `description`, `items.description`
-
-### Users
-- `email` (único)
-- `employeeCode` (único)
-- `role + isActive`
-- `department + role`
-
-### PurchaseOrders
-- `orderNumber` (único)
-- `supplier + status + orderDate`
-- `status + department`
-
-## Scripts Disponibles
-
-```bash
-# Desarrollo
-npm run dev              # Backend + Frontend
-npm run dev:backend      # Solo backend
-npm run dev:frontend     # Solo frontend
-
-# Build
-npm run build            # Build completo
-npm run build:backend    # Build backend
-npm run build:frontend   # Build frontend
-
-# Producción
-npm start                # Iniciar backend
-
-# Base de datos
-npm run seed             # Cargar datos de prueba
-npm run seed:reset       # Limpiar base de datos
-
-# Testing y Calidad
-npm run test             # Todos los tests
-npm run test:backend     # Tests backend
-npm run test:frontend    # Tests frontend
-npm run lint             # Linting completo
-npm run lint:backend     # Lint backend
-npm run lint:frontend    # Lint frontend
-
-# Instalación
-npm run install:all      # Instalar todas las dependencias
-```
-
-## Solución de Problemas
-
-### Error de conexión a MongoDB
-
-1. Verificar que el string de conexión sea correcto
-2. Verificar que la IP esté en la whitelist de MongoDB Atlas
-3. Verificar que el usuario de DB tenga permisos
-
-### Puerto ocupado
-
-Si el puerto 5000 o 5173 está ocupado:
-
-```bash
-# Cambiar en backend/.env
-PORT=3000
-
-# Cambiar en frontend/.env
-VITE_API_URL=http://localhost:3000/api
-```
-
-### Error al instalar dependencias
-
-```bash
-# Limpiar cache de npm
-npm cache clean --force
-
-# Eliminar node_modules y reinstalar
-rm -rf node_modules package-lock.json
-rm -rf backend/node_modules backend/package-lock.json
-rm -rf frontend/node_modules frontend/package-lock.json
-
-npm run install:all
-```
-
-## Mejoras Futuras
-
-- [ ] Módulo de Órdenes de Compra completo
-- [ ] Integración con proveedores (API)
-- [ ] Reportes y analíticas avanzadas
-- [ ] Notificaciones por email
-- [ ] Exportación a PDF de requisiciones
-- [ ] Gestión de presupuestos departamentales
-- [ ] Dashboard de métricas en tiempo real
-- [ ] App móvil con React Native
-- [ ] Integración con sistemas ERP
-- [ ] Firma digital de aprobaciones
-
-## Contribuir
-
-1. Fork del proyecto
-2. Crear rama para feature (`git checkout -b feature/AmazingFeature`)
-3. Commit de cambios (`git commit -m 'Add: AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT.
-
-## Soporte
-
-Para soporte y preguntas:
-- Abrir un issue en GitHub
-- Email: soporte@novum.com
-
-## Autores
-
-- Equipo NOVUM
+## 🌟 Visión General del Sistema
+
+NOVUM centraliza y automatiza el proceso de abastecimiento de la empresa. Su objetivo es eliminar el papeleo, acelerar las aprobaciones, mantener un control estricto del presupuesto y asegurar que lo que se pide es lo que llega.
+
+### Ciclo de Vida Principal
+1. **Requisición**: Un empleado solicita materiales o servicios.
+2. **Aprobación**: Según el departamento y el monto, la solicitud pasa por 1 a 3 niveles de aprobación (Jefe Directo -> Finanzas -> Dirección).
+3. **Compra**: El departamento de Compras cotiza y genera la Orden de Compra (PO) seleccionando al mejor proveedor.
+4. **Recepción**: Almacén recibe la mercancía física y valida contra la PO.
+5. **Inventario**: El stock se actualiza automáticamente.
 
 ---
 
-Desarrollado con ❤️ usando TypeScript, React y MongoDB Atlas
+## 🔑 Roles y Permisos Detallados
+
+El sistema utiliza un control de acceso basado en roles (RBAC) estricto. A continuación se detalla qué puede hacer cada perfil:
+
+### 👑 Admin (Administrador)
+*El "Superusuario" del sistema.*
+- **Gestión Total**: Acceso completo a todos los módulos.
+- **Configuración**: Crea Usuarios, Departamentos y define Jerarquías.
+- **Catálogos**: Puede Crear, Editar y Eliminar Productos, Proveedores y Categorías.
+- **Auditoría**: Puede ver todos los movimientos y logs del sistema.
+- *Uso típico: Gerente de TI o Administrador del Sistema.*
+
+### 🛒 Purchasing (Compras)
+*Encargado de negociar y adquirir bienes.*
+- **Gestión de Catálogos**: Puede crear y actualizar Productos, Proveedores y Categorías.
+- **Órdenes de Compra**: Transforma requisiciones aprobadas en Órdenes de Compra.
+- **Proveedores**: Gestiona la relación, precios y datos de los proveedores.
+- **Visibilidad Global**: Puede ver el estado de todas las requisiciones aprobadas pendientes de compra.
+- *Uso típico: Analistas de Compras, Gerente de Compras.*
+
+### 📦 Warehouse (Almacén)
+*Guardianes del inventario físico.*
+- **Recepción**: Registra la entrada de mercancía al llegar a la bodega.
+- **Gestión de Stock**: Puede realizar ajustes de inventario (entradas/salidas manuales).
+- **Consulta**: Revisa qué órdenes de compra están próximas a llegar.
+- **Catálogos**: Puede ver el listado de productos y sus ubicaciones, pero no crear nuevos (típicamente).
+- *Uso típico: Jefe de Almacén, Auxiliares de Bodega.*
+
+### ✅ Approver (Aprobador)
+*Responsable de autorizar gastos.*
+- **Bandeja de Entrada**: Recibe notificaciones de requisiciones de su equipo.
+- **Decisión**: Puede **Aprobar** (pasa al siguiente nivel o a compras) o **Rechazar** (devuelve al solicitante con comentarios).
+- **Historial**: Puede ver el historial de aprobaciones de su departamento.
+- *Uso típico: Jefes de Departamento, Gerentes de Área.*
+
+### 💰 Finance (Finanzas)
+*Control presupuestal.*
+- **Aprobación de Alto Nivel**: Interviene automáticamente en compras que superan cierto monto (ej. > $10,000 MXN).
+- **Visibilidad**: Puede consultar reportes de gastos por departamento.
+- *Uso típico: Contralor, Gerente Financiero.*
+
+### 👤 Requester (Solicitante)
+*El usuario final estándar.*
+- **Solicitar**: Crea nuevas requisiciones seleccionando productos del catálogo.
+- **Seguimiento**: Puede ver en qué etapa está su solicitud (Pendiente, Aprobada, Comprada, Recibida).
+- **Gestión Propia**: Puede cancelar sus propias solicitudes si aún no han sido procesadas.
+- *Uso típico: Cualquier empleado operativo o administrativo.*
+
+---
+
+## 🛠️ Tecnologías
+
+### Backend
+- **Node.js + Express**: Servidor robusto y escalable.
+- **MongoDB Atlas**: Base de datos NoSQL para manejar datos flexibles como atributos variables de productos.
+- **JWT**: Seguridad en sesiones stateless.
+
+### Frontend
+- **React 18 + TypeScript**: Interfaz moderna, tipada y segura.
+- **Tailwind CSS**: Diseño responsivo y limpio.
+- **TanStack Query**: Manejo eficiente del estado del servidor y caché.
+
+---
+
+## 🚀 Instalación y Despliegue
+
+### Requisitos
+- Node.js >= 18.0.0
+- MongoDB Connection String
+
+### Pasos Rápidos
+
+1. **Clonar y Preparar**
+   ```bash
+   git clone <repo>
+   cd NOVUM
+   npm run install:all
+   ```
+
+2. **Configurar Entorno**
+   - Copiar `.env.example` a `.env` en carpetas `backend` y `frontend`.
+   - Llenar `MONGODB_URI` en `backend/.env`.
+
+3. **Datos Iniciales (Seed)**
+   ```bash
+   npm run seed
+   ```
+   *Esto creará los usuarios administrador, catálogos base y configuración inicial.*
+
+4. **Ejecutar**
+   ```bash
+   npm run dev
+   ```
+   - Frontend: `http://localhost:5173`
+   - Backend: `http://localhost:5000`
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+NOVUM/
+├── backend/               # Lógica de negocio y API
+│   ├── src/controllers/   # Qué hace el sistema (User, Product, Requisition)
+│   ├── src/models/        # Cómo son los datos (Mongoose schemas)
+│   └── src/routes/        # Rutas de la API (Endpoints seguros)
+│
+├── frontend/              # Interfaz de Usuario
+│   ├── src/pages/         # Vistas principales (Dashboard, Listados)
+│   ├── src/services/      # Conexión con el Backend (Axios)
+│   └── src/context/       # Estado global (AuthUser)
+```
+
+## 📞 Soporte
+
+Para dudas sobre el funcionamiento o reporte de bugs, contactar al equipo de TI o abrir un issue en el repositorio.
