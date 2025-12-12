@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 const UserForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const isEditing = !!id;
+    const isEditing = !!id && id !== 'undefined' && id !== 'new';
     const queryClient = useQueryClient();
 
     const [formData, setFormData] = useState<CreateUserData>({
@@ -51,8 +51,8 @@ const UserForm = () => {
 
     // Manually handle data loading for editing since query `onSuccess` is deprecated in v5
     useEffect(() => {
-        if (isEditing) {
-            userService.getById(id!).then((response) => {
+        if (isEditing && id) {
+            userService.getById(id).then((response) => {
                 if (response.success && response.data) {
                     const user = response.data;
                     setFormData({

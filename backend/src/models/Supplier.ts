@@ -108,6 +108,8 @@ const SupplierSchema = new Schema<ISupplier>({
   },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Índices compuestos

@@ -49,6 +49,8 @@ const CategorySchema = new Schema<ICategory>({
   },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Índices compuestos para jerarquías

@@ -95,6 +95,8 @@ const DepartmentSchema = new Schema<IDepartment>({
   },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Índices para consultas optimizadas
@@ -102,7 +104,7 @@ DepartmentSchema.index({ code: 1, isActive: 1 });
 DepartmentSchema.index({ isActive: 1, name: 1 });
 
 // Pre-save hook para calcular presupuesto disponible
-DepartmentSchema.pre('save', function(next) {
+DepartmentSchema.pre('save', function (next) {
   if (this.budget) {
     this.budget.available = this.budget.annual - this.budget.spent - this.budget.committed;
     this.budget.lastUpdated = new Date();

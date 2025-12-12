@@ -78,8 +78,9 @@ const UserSchema = new Schema<IUser>({
   lastLogin: {
     type: Date,
   },
-}, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Índices compuestos para consultas optimizadas en Atlas
@@ -88,7 +89,7 @@ UserSchema.index({ department: 1, role: 1 });
 UserSchema.index({ email: 1, isActive: 1 });
 
 // Hash de contraseña antes de guardar
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   const salt = await bcrypt.genSalt(12);
@@ -97,7 +98,7 @@ UserSchema.pre('save', async function(next) {
 });
 
 // Método para comparar contraseñas
-UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
