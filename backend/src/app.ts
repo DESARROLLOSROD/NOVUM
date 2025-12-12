@@ -73,6 +73,10 @@ import purchaseOrderRoutes from './routes/purchaseOrderRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import budgetRoutes from './routes/budgetRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import userRoutes from './routes/userRoutes';
+import productRoutes from './routes/productRoutes';
+import supplierRoutes from './routes/supplierRoutes';
+import departmentRoutes from './routes/departmentRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/requisitions', requisitionRoutes);
@@ -80,6 +84,10 @@ app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/departments', departmentRoutes);
 
 // Manejo de rutas no encontradas
 app.use(notFound);
