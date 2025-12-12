@@ -78,6 +78,7 @@ const UserSchema = new Schema<IUser>({
   lastLogin: {
     type: Date,
   },
+}, {
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
