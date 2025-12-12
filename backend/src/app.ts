@@ -70,10 +70,12 @@ app.get('/health', (_req, res) => {
 import authRoutes from './routes/authRoutes';
 import requisitionRoutes from './routes/requisitionRoutes';
 import purchaseOrderRoutes from './routes/purchaseOrderRoutes';
+import departmentRoutes from './routes/departmentRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/requisitions', requisitionRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/departments', departmentRoutes);
 
 // Manejo de rutas no encontradas
 app.use(notFound);
