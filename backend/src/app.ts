@@ -70,10 +70,16 @@ app.get('/health', (_req, res) => {
 import authRoutes from './routes/authRoutes';
 import requisitionRoutes from './routes/requisitionRoutes';
 import purchaseOrderRoutes from './routes/purchaseOrderRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
+import budgetRoutes from './routes/budgetRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/requisitions', requisitionRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Manejo de rutas no encontradas
 app.use(notFound);

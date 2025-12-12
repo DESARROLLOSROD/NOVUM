@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { requisitionService } from '@/services/requisitionService';
+import { exportService } from '@/services/exportService';
 import { useAuth } from '@/context/AuthContext';
-import { Plus, Eye } from 'lucide-react';
+import { Plus, Eye, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const RequisitionList = () => {
   const { user } = useAuth();
@@ -40,6 +42,20 @@ const RequisitionList = () => {
     return labels[status] || status;
   };
 
+  const handleExportExcel = async () => {
+    try {
+      toast.loading('Generando Excel...');
+      const blob = await exportService.exportRequisitionsToExcel();
+      const timestamp = new Date().toISOString().split('T')[0];
+      exportService.downloadFile(blob, `requisiciones-${timestamp}.xlsx`);
+      toast.dismiss();
+      toast.success('Excel descargado');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Error al generar Excel');
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center py-12">Cargando...</div>;
   }
@@ -48,12 +64,21 @@ const RequisitionList = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Requisiciones</h1>
-        {(user?.role === 'requester' || user?.role === 'admin') && (
-          <Link to="/requisitions/new" className="btn btn-primary inline-flex items-center">
-            <Plus className="w-5 h-5 mr-2" />
-            Nueva Requisición
-          </Link>
-        )}
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportExcel}
+            className="btn bg-green-600 hover:bg-green-700 text-white inline-flex items-center"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Exportar a Excel
+          </button>
+          {(user?.role === 'requester' || user?.role === 'admin') && (
+            <Link to="/requisitions/new" className="btn btn-primary inline-flex items-center">
+              <Plus className="w-5 h-5 mr-2" />
+              Nueva Requisición
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="card">

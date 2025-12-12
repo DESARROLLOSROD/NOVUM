@@ -7,6 +7,10 @@ import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import logger from '../config/logger';
+import { createNotification } from './notificationController';
+import EmailService from '../services/EmailService';
+import PdfService from '../services/PdfService';
+import ExcelService from '../services/ExcelService';
 
 export const createRequisition = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -244,6 +248,28 @@ export const approveRequisition = async (req: AuthRequest, res: Response): Promi
 
     await requisition.save();
 
+    // Enviar notificación y email al solicitante
+    const requester = await User.findById(requisition.requester);
+    if (requester) {
+      await createNotification(
+        requester._id,
+        'requisition_approved',
+        'Requisición Aprobada',
+        `Tu requisición ${requisition.requisitionNumber} ha sido aprobada por ${user.firstName} ${user.lastName}.`,
+        'Requisition',
+        requisition._id
+      );
+
+      // Enviar email
+      await EmailService.sendRequisitionApprovedEmail(
+        requester.email,
+        requisition.requisitionNumber,
+        `${requester.firstName} ${requester.lastName}`,
+        `${user.firstName} ${user.lastName}`,
+        comments
+      );
+    }
+
     logger.info(`Requisición ${requisition.requisitionNumber} aprobada por ${user.email}`);
 
     res.json({
@@ -295,6 +321,28 @@ export const rejectRequisition = async (req: AuthRequest, res: Response): Promis
 
     await requisition.save();
 
+    // Enviar notificación y email al solicitante
+    const requester = await User.findById(requisition.requester);
+    if (requester) {
+      await createNotification(
+        requester._id,
+        'requisition_rejected',
+        'Requisición Rechazada',
+        `Tu requisición ${requisition.requisitionNumber} ha sido rechazada por ${user.firstName} ${user.lastName}. Motivo: ${reason}`,
+        'Requisition',
+        requisition._id
+      );
+
+      // Enviar email
+      await EmailService.sendRequisitionRejectedEmail(
+        requester.email,
+        requisition.requisitionNumber,
+        `${requester.firstName} ${requester.lastName}`,
+        `${user.firstName} ${user.lastName}`,
+        reason
+      );
+    }
+
     logger.info(`Requisición ${requisition.requisitionNumber} rechazada por ${user.email}`);
 
     res.json({
@@ -344,6 +392,130 @@ export const cancelRequisition = async (req: AuthRequest, res: Response): Promis
     });
   } catch (error) {
     logger.error('Error cancelando requisición:', error);
+    throw error;
+  }
+};
+
+// GET /api/requisitions/:id/export/pdf - Exportar requisición a PDF
+export const exportRequisitionToPdf = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AppError('No autorizado', 401);
+    }
+
+    const requisition = await Requisition.findById(req.params.id)
+      .populate('requester', 'firstName lastName email employeeCode')
+      .populate('department', 'name code costCenter')
+      .populate('items.category', 'name code')
+      .populate('approvalHistory.approver', 'firstName lastName employeeCode');
+
+    if (!requisition) {
+      throw new AppError('Requisición no encontrada', 404);
+    }
+
+    const pdfBuffer = await PdfService.generateRequisitionPdf(requisition);
+
+    logger.info(`PDF exportado para requisición ${requisition.requisitionNumber}`);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=requisicion-${requisition.requisitionNumber}.pdf`
+    );
+    res.send(pdfBuffer);
+  } catch (error) {
+    logger.error('Error exportando requisición a PDF:', error);
+    throw error;
+  }
+};
+
+// GET /api/requisitions/:id/export/excel - Exportar requisición a Excel
+export const exportRequisitionToExcel = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AppError('No autorizado', 401);
+    }
+
+    const requisition = await Requisition.findById(req.params.id)
+      .populate('requester', 'firstName lastName email employeeCode')
+      .populate('department', 'name code costCenter')
+      .populate('items.category', 'name code')
+      .populate('approvalHistory.approver', 'firstName lastName employeeCode');
+
+    if (!requisition) {
+      throw new AppError('Requisición no encontrada', 404);
+    }
+
+    const excelBuffer = await ExcelService.generateSingleRequisitionExcel(requisition);
+
+    logger.info(`Excel exportado para requisición ${requisition.requisitionNumber}`);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=requisicion-${requisition.requisitionNumber}.xlsx`
+    );
+    res.send(excelBuffer);
+  } catch (error) {
+    logger.error('Error exportando requisición a Excel:', error);
+    throw error;
+  }
+};
+
+// GET /api/requisitions/export/excel - Exportar múltiples requisiciones a Excel
+export const exportRequisitionsToExcel = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AppError('No autorizado', 401);
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      throw new AppError('Usuario no encontrado', 404);
+    }
+
+    // Filtros
+    const filter: any = {};
+    if (!['admin', 'finance', 'purchasing'].includes(user.role)) {
+      filter.department = user.department;
+    }
+
+    const { status, department, dateFrom, dateTo } = req.query;
+
+    if (status) filter.status = status;
+    if (department) filter.department = department;
+    if (dateFrom || dateTo) {
+      filter.requestDate = {};
+      if (dateFrom) filter.requestDate.$gte = new Date(dateFrom as string);
+      if (dateTo) filter.requestDate.$lte = new Date(dateTo as string);
+    }
+
+    const requisitions = await Requisition.find(filter)
+      .populate('requester', 'firstName lastName email')
+      .populate('department', 'name code costCenter')
+      .populate('items.category', 'name code')
+      .sort({ requestDate: -1 })
+      .limit(1000); // Limitar a 1000 para evitar problemas de memoria
+
+    const excelBuffer = await ExcelService.generateRequisitionsExcel(requisitions);
+
+    logger.info(`Excel exportado con ${requisitions.length} requisiciones`);
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=requisiciones-${timestamp}.xlsx`
+    );
+    res.send(excelBuffer);
+  } catch (error) {
+    logger.error('Error exportando requisiciones a Excel:', error);
     throw error;
   }
 };

@@ -151,4 +151,88 @@ RequisitionSchema.pre('save', function(next) {
   next();
 });
 
+// Post-save hook para actualizar presupuesto del departamento
+RequisitionSchema.post('save', async function(doc) {
+  try {
+    const Department = mongoose.model('Department');
+    const department = await Department.findById(doc.department);
+
+    if (!department || !department.budget) {
+      return;
+    }
+
+    // Si la requisición está pendiente o en aprobación, actualizar comprometido
+    if (doc.status === 'pending' || doc.status === 'in_approval') {
+      // Calcular el total comprometido de este departamento
+      const Requisition = mongoose.model('Requisition');
+      const committedTotal = await Requisition.aggregate([
+        {
+          $match: {
+            department: doc.department,
+            status: { $in: ['pending', 'in_approval'] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$totalAmount' },
+          },
+        },
+      ]);
+
+      department.budget.committed = committedTotal[0]?.total || 0;
+    }
+
+    // Si la requisición es aprobada, actualizar gastado y reducir comprometido
+    if (doc.status === 'approved') {
+      department.budget.spent += doc.totalAmount;
+
+      // Recalcular comprometido
+      const Requisition = mongoose.model('Requisition');
+      const committedTotal = await Requisition.aggregate([
+        {
+          $match: {
+            department: doc.department,
+            status: { $in: ['pending', 'in_approval'] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$totalAmount' },
+          },
+        },
+      ]);
+
+      department.budget.committed = committedTotal[0]?.total || 0;
+    }
+
+    // Si la requisición es rechazada o cancelada, reducir comprometido
+    if (doc.status === 'rejected' || doc.status === 'cancelled') {
+      // Recalcular comprometido
+      const Requisition = mongoose.model('Requisition');
+      const committedTotal = await Requisition.aggregate([
+        {
+          $match: {
+            department: doc.department,
+            status: { $in: ['pending', 'in_approval'] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$totalAmount' },
+          },
+        },
+      ]);
+
+      department.budget.committed = committedTotal[0]?.total || 0;
+    }
+
+    await department.save();
+  } catch (error) {
+    console.error('Error actualizando presupuesto del departamento:', error);
+  }
+});
+
 export default mongoose.model<IRequisition>('Requisition', RequisitionSchema);

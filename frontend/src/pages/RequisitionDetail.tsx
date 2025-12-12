@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { requisitionService } from '@/services/requisitionService';
+import { exportService } from '@/services/exportService';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Ban, Download, FileText } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -50,6 +51,32 @@ const RequisitionDetail = () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
     },
   });
+
+  const handleExportPdf = async () => {
+    try {
+      toast.loading('Generando PDF...');
+      const blob = await exportService.exportRequisitionToPdf(id!);
+      exportService.downloadFile(blob, `requisicion-${requisition?.requisitionNumber}.pdf`);
+      toast.dismiss();
+      toast.success('PDF descargado');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Error al generar PDF');
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      toast.loading('Generando Excel...');
+      const blob = await exportService.exportRequisitionToExcel(id!);
+      exportService.downloadFile(blob, `requisicion-${requisition?.requisitionNumber}.xlsx`);
+      toast.dismiss();
+      toast.success('Excel descargado');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Error al generar Excel');
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-12">Cargando...</div>;
@@ -135,38 +162,58 @@ const RequisitionDetail = () => {
           </div>
         )}
 
-        {canApprove && (
-          <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-4">
+          {canApprove && (
+            <>
+              <button
+                onClick={() => setShowApproveModal(true)}
+                className="btn btn-primary inline-flex items-center"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Aprobar
+              </button>
+              <button
+                onClick={() => setShowRejectModal(true)}
+                className="btn btn-danger inline-flex items-center"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Rechazar
+              </button>
+            </>
+          )}
+
+          {canCancel && requisition.status !== 'ordered' && requisition.status !== 'cancelled' && (
             <button
-              onClick={() => setShowApproveModal(true)}
-              className="btn btn-primary inline-flex items-center"
+              onClick={() => {
+                if (confirm('¿Está seguro de cancelar esta requisición?')) {
+                  cancelMutation.mutate();
+                }
+              }}
+              className="btn btn-secondary inline-flex items-center"
             >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Aprobar
+              <Ban className="w-4 h-4 mr-2" />
+              Cancelar Requisición
+            </button>
+          )}
+
+          {/* Botones de exportación */}
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={handleExportPdf}
+              className="btn bg-red-600 hover:bg-red-700 text-white inline-flex items-center"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Exportar PDF
             </button>
             <button
-              onClick={() => setShowRejectModal(true)}
-              className="btn btn-danger inline-flex items-center"
+              onClick={handleExportExcel}
+              className="btn bg-green-600 hover:bg-green-700 text-white inline-flex items-center"
             >
-              <XCircle className="w-4 h-4 mr-2" />
-              Rechazar
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Excel
             </button>
           </div>
-        )}
-
-        {canCancel && requisition.status !== 'ordered' && requisition.status !== 'cancelled' && (
-          <button
-            onClick={() => {
-              if (confirm('¿Está seguro de cancelar esta requisición?')) {
-                cancelMutation.mutate();
-              }
-            }}
-            className="btn btn-secondary inline-flex items-center"
-          >
-            <Ban className="w-4 h-4 mr-2" />
-            Cancelar Requisición
-          </button>
-        )}
+        </div>
       </div>
 
       <div className="card mb-6">

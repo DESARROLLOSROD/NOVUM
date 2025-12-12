@@ -6,6 +6,9 @@ import {
   approveRequisition,
   rejectRequisition,
   cancelRequisition,
+  exportRequisitionToPdf,
+  exportRequisitionToExcel,
+  exportRequisitionsToExcel,
 } from '../controllers/requisitionController';
 import { protect, authorize } from '../middleware/auth';
 import { createRequisitionValidation, idValidation, paginationValidation } from '../middleware/validator';
@@ -47,5 +50,12 @@ router.post(
   idValidation,
   cancelRequisition
 );
+
+// Rutas de exportación
+router.get('/export/excel', exportRequisitionsToExcel);
+
+router.get('/:id/export/pdf', idValidation, exportRequisitionToPdf);
+
+router.get('/:id/export/excel', idValidation, exportRequisitionToExcel);
 
 export default router;
