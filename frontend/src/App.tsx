@@ -14,6 +14,7 @@ import DepartmentList from '@/pages/Departments/DepartmentList';
 import DepartmentForm from '@/pages/Departments/DepartmentForm';
 import ProductList from '@/pages/Products/ProductList';
 import ProductForm from '@/pages/Products/ProductForm';
+import InventoryPage from '@/pages/InventoryPage';
 import Layout from '@/components/Layout';
 
 const queryClient = new QueryClient({
@@ -82,6 +83,9 @@ const AppRoutes = () => {
         <Route path="products" element={<ProductList />} />
         <Route path="products/new" element={<ProductForm />} />
         <Route path="products/:id" element={<ProductForm />} />
+
+        {/* Inventory */}
+        <Route path="inventory" element={<InventoryPage />} />
       </Route>
     </Routes>
   );

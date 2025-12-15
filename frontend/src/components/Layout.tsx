@@ -53,6 +53,13 @@ const Layout = () => {
                     Productos
                   </Link>
                 )}
+                <Link
+                    to="/inventory"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-primary-500"
+                >
+                    <Package className="w-4 h-4 mr-2" />
+                    Inventario
+                </Link>
                 {user?.role === 'admin' && (
                   <>
                     <Link
