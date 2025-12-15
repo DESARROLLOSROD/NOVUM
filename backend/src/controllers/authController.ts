@@ -59,7 +59,8 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
   }
 };
 
-export const login = async (req: AuthRequest, res: Response): Promise<void> => {
+// ... (previous code)
+export const login = async (req: AuthRequest, res: Response, next: any): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -109,7 +110,7 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
     });
   } catch (error) {
     logger.error('Error en login:', error);
-    throw error;
+    next(error);
   }
 };
 
