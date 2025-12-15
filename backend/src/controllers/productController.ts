@@ -1,16 +1,17 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Product from '../models/Product';
 import Category from '../models/Category';
 import Supplier from '../models/Supplier';
 import logger from '../config/logger';
+import { AppError } from '../middleware/errorHandler';
 
 /**
  * @desc    Get all products
  * @route   GET /api/products
  * @access  Private
  */
-export const getProducts = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getProducts = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { category, supplier, isActive, search, stockStatus } = req.query;
     const page = parseInt(req.query.page as string) || 1;
@@ -65,13 +66,9 @@ export const getProducts = async (req: AuthRequest, res: Response): Promise<void
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error getting products:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener productos',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -80,7 +77,7 @@ export const getProducts = async (req: AuthRequest, res: Response): Promise<void
  * @route   GET /api/products/:id
  * @access  Private
  */
-export const getProduct = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getProduct = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('category')
@@ -89,24 +86,16 @@ export const getProduct = async (req: AuthRequest, res: Response): Promise<void>
       .populate('createdBy', 'firstName lastName email');
 
     if (!product) {
-      res.status(404).json({
-        success: false,
-        message: 'Producto no encontrado'
-      });
-      return;
+      throw new AppError('Producto no encontrado', 404);
     }
 
     res.json({
       success: true,
       data: product
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error getting product:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener producto',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -115,7 +104,7 @@ export const getProduct = async (req: AuthRequest, res: Response): Promise<void>
  * @route   POST /api/products
  * @access  Private (Admin, Purchasing)
  */
-export const createProduct = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createProduct = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
       code,
@@ -137,32 +126,20 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<vo
     // Check if code already exists
     const existingProduct = await Product.findOne({ code: code.toUpperCase() });
     if (existingProduct) {
-      res.status(400).json({
-        success: false,
-        message: 'El código del producto ya existe'
-      });
-      return;
+      throw new AppError('El código del producto ya existe', 400);
     }
 
     // Verify category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
-      res.status(400).json({
-        success: false,
-        message: 'La categoría no existe'
-      });
-      return;
+      throw new AppError('La categoría no existe', 400);
     }
 
     // Verify supplier if provided
     if (preferredSupplier) {
       const supplierExists = await Supplier.findById(preferredSupplier);
       if (!supplierExists) {
-        res.status(400).json({
-          success: false,
-          message: 'El proveedor preferido no existe'
-        });
-        return;
+        throw new AppError('El proveedor preferido no existe', 400);
       }
     }
 
@@ -197,13 +174,9 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<vo
       message: 'Producto creado exitosamente',
       data: populatedProduct
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error creating product:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear producto',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -212,29 +185,21 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<vo
  * @route   PUT /api/products/:id
  * @access  Private (Admin, Purchasing)
  */
-export const updateProduct = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateProduct = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const updateData = req.body;
 
     const product = await Product.findById(id);
     if (!product) {
-      res.status(404).json({
-        success: false,
-        message: 'Producto no encontrado'
-      });
-      return;
+      throw new AppError('Producto no encontrado', 404);
     }
 
     // Check if code is being changed and if it's unique
     if (updateData.code && updateData.code.toUpperCase() !== product.code) {
       const existingCode = await Product.findOne({ code: updateData.code.toUpperCase() });
       if (existingCode) {
-        res.status(400).json({
-          success: false,
-          message: 'El código del producto ya existe'
-        });
-        return;
+        throw new AppError('El código del producto ya existe', 400);
       }
       updateData.code = updateData.code.toUpperCase();
     }
@@ -243,11 +208,7 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<vo
     if (updateData.category && updateData.category !== product.category?.toString()) {
       const categoryExists = await Category.findById(updateData.category);
       if (!categoryExists) {
-        res.status(400).json({
-          success: false,
-          message: 'La categoría no existe'
-        });
-        return;
+        throw new AppError('La categoría no existe', 400);
       }
     }
 
@@ -268,13 +229,9 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<vo
       message: 'Producto actualizado exitosamente',
       data: updatedProduct
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error updating product:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar producto',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -283,17 +240,13 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<vo
  * @route   DELETE /api/products/:id
  * @access  Private (Admin only)
  */
-export const deleteProduct = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteProduct = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
 
     const product = await Product.findById(id);
     if (!product) {
-      res.status(404).json({
-        success: false,
-        message: 'Producto no encontrado'
-      });
-      return;
+      throw new AppError('Producto no encontrado', 404);
     }
 
     product.isActive = false;
@@ -305,13 +258,9 @@ export const deleteProduct = async (req: AuthRequest, res: Response): Promise<vo
       success: true,
       message: 'Producto desactivado exitosamente'
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error deleting product:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al desactivar producto',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -320,26 +269,18 @@ export const deleteProduct = async (req: AuthRequest, res: Response): Promise<vo
  * @route   PUT /api/products/:id/stock
  * @access  Private (Warehouse, Admin)
  */
-export const updateStock = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateStock = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const { quantity, operation } = req.body; // operation: 'add' | 'subtract' | 'set'
 
     if (!operation || !['add', 'subtract', 'set'].includes(operation)) {
-      res.status(400).json({
-        success: false,
-        message: 'Operación inválida. Use: add, subtract o set'
-      });
-      return;
+      throw new AppError('Operación inválida. Use: add, subtract o set', 400);
     }
 
     const product = await Product.findById(id);
     if (!product) {
-      res.status(404).json({
-        success: false,
-        message: 'Producto no encontrado'
-      });
-      return;
+      throw new AppError('Producto no encontrado', 404);
     }
 
     const currentStock = product.currentStock || 0;
@@ -371,13 +312,9 @@ export const updateStock = async (req: AuthRequest, res: Response): Promise<void
         stockStatus: product.toObject().stockStatus
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error updating stock:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar stock',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -386,7 +323,7 @@ export const updateStock = async (req: AuthRequest, res: Response): Promise<void
  * @route   GET /api/products/alerts/low-stock
  * @access  Private
  */
-export const getLowStockProducts = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getLowStockProducts = async (_req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const products = await Product.find({
       isActive: true,
@@ -403,12 +340,8 @@ export const getLowStockProducts = async (req: AuthRequest, res: Response): Prom
       count: products.length,
       data: products
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error getting low stock products:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener productos con stock bajo',
-      error: error.message
-    });
+    next(error);
   }
 };

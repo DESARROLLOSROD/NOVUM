@@ -1,91 +1,67 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../config/logger';
 
-export interface ErrorResponse {
-  success: false;
-  message: string;
-  errors?: any;
-  stack?: string;
-}
-
-class AppError extends Error {
+export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
+  errors?: any[];
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number = 500, errors?: any[]) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = true;
-
+    this.errors = errors;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export { AppError };
-
 export const errorHandler = (
   err: any,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
-  let error = { ...err };
-  error.message = err.message;
+  let error = err;
 
-  logger.error('Error:', {
-    message: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-  });
-
-  // Error de Mongoose - CastError (ID inválido)
-  if (err.name === 'CastError') {
-    const message = 'Recurso no encontrado';
+  // Mongoose CastError
+  if (error.name === 'CastError') {
+    const message = `Resource not found with id of ${error.value}`;
     error = new AppError(message, 404);
   }
 
-  // Error de Mongoose - Duplicado
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    const message = `El ${field} ya existe`;
+  // Mongoose duplicate key
+  if (error.code === 11000) {
+    const value = error.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+    const message = `Duplicate field value entered: ${value}. Please use another value!`;
     error = new AppError(message, 400);
   }
 
-  // Error de Mongoose - Validación
-  if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors)
-      .map((e: any) => e.message)
-      .join(', ');
+  // Mongoose validation error
+  if (error.name === 'ValidationError') {
+    const errors = Object.values(error.errors).map((el: any) => el.message);
+    const message = `Invalid input data. ${errors.join('. ')}`;
     error = new AppError(message, 400);
   }
 
-  // Error de JWT
-  if (err.name === 'JsonWebTokenError') {
-    const message = 'Token inválido';
-    error = new AppError(message, 401);
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+      errors: error.errors,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
+  } else {
+    // Log unexpected errors for debugging
+    logger.error('Unhandled error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      ...(process.env.NODE_ENV === 'development' && { error: err.message, stack: err.stack })
+    });
   }
-
-  // Error de JWT expirado
-  if (err.name === 'TokenExpiredError') {
-    const message = 'Token expirado';
-    error = new AppError(message, 401);
-  }
-
-  const response: ErrorResponse = {
-    success: false,
-    message: error.message || 'Error del servidor',
-  };
-
-  if (process.env.NODE_ENV === 'development') {
-    response.stack = err.stack;
-    response.errors = err.errors;
-  }
-
-  res.status(error.statusCode || 500).json(response);
 };
 
-export const notFound = (req: Request, res: Response, next: NextFunction): void => {
+export const notFound = (req: Request, _res: Response, next: NextFunction): void => {
   const error = new AppError(`Ruta no encontrada - ${req.originalUrl}`, 404);
   next(error);
 };

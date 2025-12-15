@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IProduct extends Document {
+  stockStatus: 'out_of_stock' | 'low_stock' | 'in_stock' | 'overstock';
   code: string;
   name: string;
   description?: string;

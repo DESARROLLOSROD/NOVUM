@@ -4,14 +4,17 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
+import mongoSanitize from 'express-mongo-sanitize';
 import connectDB from './config/database';
 import logger from './config/logger';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiter';
+import { validateEnv } from './config/env';
 
 
-// Cargar variables de entorno
+// Cargar variables de entorno y validar
 dotenv.config();
+validateEnv();
 
 // Crear app de Express
 const app: Application = express();
@@ -42,6 +45,14 @@ app.use('/api/', apiLimiter);
 // Body parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Sanitize user input to prevent MongoDB Operator Injection
+app.use(mongoSanitize({
+  replaceWith: '_',
+  onSanitize: ({ req, key }) => {
+    logger.warn(`MongoDB injection attempt detected: key "${key}" from IP ${req.ip}`);
+  },
+}));
 
 // Compresión
 app.use(compression());
