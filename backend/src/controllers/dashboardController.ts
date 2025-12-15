@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Requisition from '../models/Requisition';
-import PurchaseOrder from '../models/PurchaseOrder';
 import User from '../models/User';
 import { AppError } from '../middleware/errorHandler';
 import logger from '../config/logger';

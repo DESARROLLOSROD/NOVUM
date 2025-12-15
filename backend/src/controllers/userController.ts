@@ -1,15 +1,16 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import User from '../models/User';
 import Department from '../models/Department';
 import logger from '../config/logger';
+import { AppError } from '../middleware/errorHandler';
 
 /**
  * @desc    Get all users
  * @route   GET /api/users
  * @access  Private (Admin only)
  */
-export const getUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getUsers = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { role, department, isActive, search } = req.query;
 
@@ -40,13 +41,9 @@ export const getUsers = async (req: AuthRequest, res: Response): Promise<void> =
       success: true,
       data: users
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error getting users:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener usuarios',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -55,31 +52,23 @@ export const getUsers = async (req: AuthRequest, res: Response): Promise<void> =
  * @route   GET /api/users/:id
  * @access  Private
  */
-export const getUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getUser = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const user = await User.findById(req.params.id)
       .populate('department')
       .select('-password');
 
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-      return;
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     res.json({
       success: true,
       data: user
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error getting user:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener usuario',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -88,7 +77,7 @@ export const getUser = async (req: AuthRequest, res: Response): Promise<void> =>
  * @route   POST /api/users
  * @access  Private (Admin only)
  */
-export const createUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createUser = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
       email,
@@ -104,32 +93,20 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: 'El email ya está registrado'
-      });
-      return;
+      throw new AppError('El email ya está registrado', 400);
     }
 
     // Check employee code
     const existingCode = await User.findOne({ employeeCode });
     if (existingCode) {
-      res.status(400).json({
-        success: false,
-        message: 'El código de empleado ya existe'
-      });
-      return;
+      throw new AppError('El código de empleado ya existe', 400);
     }
 
     // Verify department exists
     if (department) {
       const deptExists = await Department.findById(department);
       if (!deptExists) {
-        res.status(400).json({
-          success: false,
-          message: 'El departamento no existe'
-        });
-        return;
+        throw new AppError('El departamento no existe', 400);
       }
     }
 
@@ -158,13 +135,9 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
       message: 'Usuario creado exitosamente',
       data: userWithoutPassword
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error creating user:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear usuario',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -173,7 +146,7 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
  * @route   PUT /api/users/:id
  * @access  Private (Admin only)
  */
-export const updateUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateUser = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -188,22 +161,14 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
 
     const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-      return;
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     // Check if employee code is being changed and if it's unique
     if (employeeCode && employeeCode !== user.employeeCode) {
       const existingCode = await User.findOne({ employeeCode });
       if (existingCode) {
-        res.status(400).json({
-          success: false,
-          message: 'El código de empleado ya existe'
-        });
-        return;
+        throw new AppError('El código de empleado ya existe', 400);
       }
     }
 
@@ -211,11 +176,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     if (department && department !== user.department?.toString()) {
       const deptExists = await Department.findById(department);
       if (!deptExists) {
-        res.status(400).json({
-          success: false,
-          message: 'El departamento no existe'
-        });
-        return;
+        throw new AppError('El departamento no existe', 400);
       }
     }
 
@@ -241,13 +202,9 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
       message: 'Usuario actualizado exitosamente',
       data: updatedUser
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error updating user:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar usuario',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -256,26 +213,18 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
  * @route   DELETE /api/users/:id
  * @access  Private (Admin only)
  */
-export const deleteUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteUser = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
 
     const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-      return;
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     // Prevent deleting yourself
     if (user._id.toString() === req.user?.id) {
-      res.status(400).json({
-        success: false,
-        message: 'No puedes desactivar tu propia cuenta'
-      });
-      return;
+      throw new AppError('No puedes desactivar tu propia cuenta', 400);
     }
 
     // Soft delete - just deactivate
@@ -288,13 +237,9 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
       success: true,
       message: 'Usuario desactivado exitosamente'
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error deleting user:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al desactivar usuario',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -303,26 +248,18 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
  * @route   PUT /api/users/:id/reset-password
  * @access  Private (Admin only)
  */
-export const resetUserPassword = async (req: AuthRequest, res: Response): Promise<void> => {
+export const resetUserPassword = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const { newPassword } = req.body;
 
     if (!newPassword || newPassword.length < 6) {
-      res.status(400).json({
-        success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres'
-      });
-      return;
+      throw new AppError('La contraseña debe tener al menos 6 caracteres', 400);
     }
 
     const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-      return;
+      throw new AppError('Usuario no encontrado', 404);
     }
 
     user.password = newPassword;
@@ -334,12 +271,8 @@ export const resetUserPassword = async (req: AuthRequest, res: Response): Promis
       success: true,
       message: 'Contraseña restablecida exitosamente'
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error resetting password:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al restablecer contraseña',
-      error: error.message
-    });
+    next(error);
   }
 };

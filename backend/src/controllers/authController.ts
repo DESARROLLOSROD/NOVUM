@@ -10,11 +10,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-      return;
+      throw new AppError('Errores de validación', 400, errors.array());
     }
 
     const { employeeCode, email, password, firstName, lastName, role, department, approvalLimit } = req.body;
@@ -67,11 +63,7 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-      return;
+      throw new AppError('Errores de validación', 400, errors.array());
     }
 
     const { email, password } = req.body;

@@ -16,11 +16,7 @@ export const createRequisition = async (req: AuthRequest, res: Response): Promis
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-      return;
+      throw new AppError('Errores de validación', 400, errors.array());
     }
 
     if (!req.user) {

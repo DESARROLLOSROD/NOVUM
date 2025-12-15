@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Notification, { NotificationType } from '../models/Notification';
-import User from '../models/User';
 import { AppError } from '../middleware/errorHandler';
 import logger from '../config/logger';
 import mongoose from 'mongoose';
