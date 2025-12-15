@@ -89,6 +89,7 @@ import productRoutes from './routes/productRoutes';
 import supplierRoutes from './routes/supplierRoutes';
 import departmentRoutes from './routes/departmentRoutes';
 import categoryRoutes from './routes/categoryRoutes';
+import inventoryRoutes from './routes/inventoryRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/requisitions', requisitionRoutes);
@@ -101,6 +102,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Manejo de rutas no encontradas
 app.use(notFound);
