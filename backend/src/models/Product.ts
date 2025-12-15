@@ -131,13 +131,13 @@ const ProductSchema: Schema = new Schema(
 );
 
 // Indexes for better query performance
-ProductSchema.index({ code: 1 });
+
 ProductSchema.index({ name: 'text', description: 'text' });
 ProductSchema.index({ category: 1, isActive: 1 });
 ProductSchema.index({ preferredSupplier: 1 });
 
 // Virtual for stock status
-ProductSchema.virtual('stockStatus').get(function(this: IProduct) {
+ProductSchema.virtual('stockStatus').get(function (this: IProduct) {
   if (this.currentStock === undefined || this.currentStock === 0) {
     return 'out_of_stock';
   }

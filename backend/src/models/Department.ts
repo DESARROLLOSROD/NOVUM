@@ -50,6 +50,22 @@ const DepartmentSchema = new Schema<IDepartment>({
   },
 }, {
   timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: function (doc, ret) {
+      ret.id = ret._id;
+      delete (ret as any)._id;
+    }
+  },
+  toObject: {
+    virtuals: true,
+    versionKey: false,
+    transform: function (doc, ret) {
+      ret.id = ret._id;
+      delete (ret as any)._id;
+    }
+  }
 });
 
 export default mongoose.model<IDepartment>('Department', DepartmentSchema);
