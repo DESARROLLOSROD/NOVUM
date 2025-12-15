@@ -395,7 +395,7 @@ const seedData = async (): Promise<void> => {
 
     process.exit(0);
   } catch (error) {
-    logger.error('Error en el seed:', error);
+    logger.error('Error en el seed:', JSON.stringify(error, null, 2));
     process.exit(1);
   }
 };
