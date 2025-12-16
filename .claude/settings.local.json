@@ -14,7 +14,21 @@
       "Bash(node -e \"const mongoose = require(''mongoose''); mongoose.connect(''mongodb+srv://miguellopez_db_user:JefesFrente2024@sjt.jn8vcf6.mongodb.net/NOVUM'').then(async () => { const User = mongoose.model(''User'', new mongoose.Schema({}, { strict: false })); const users = await User.find({}, ''email role'').limit(10); users.forEach(u => console.log(u.email, ''-'', u.role)); process.exit(0); })\")",
       "Bash(node -e \"const mongoose = require(''mongoose''); const bcrypt = require(''bcryptjs''); mongoose.connect(''mongodb+srv://miguellopez_db_user:JefesFrente2024@sjt.jn8vcf6.mongodb.net/NOVUM'').then(async () => { const User = mongoose.model(''User'', new mongoose.Schema({}, { strict: false })); const passwords = { ''admin@novum.com'': ''Admin123!'', ''compras@novum.com'': ''Compras123!'', ''finanzas@novum.com'': ''Finanzas123!'', ''aprobador@novum.com'': ''Aprobador123!'', ''almacen@novum.com'': ''Almacen123!'', ''solicitante@novum.com'': ''Solicitante123!'' }; for (const [email, pass] of Object.entries(passwords)) { const hash = await bcrypt.hash(pass, 12); await User.updateOne({ email }, { password: hash }); console.log(''Updated:'', email); } console.log(''✅ Passwords updated!''); process.exit(0); })\")",
       "Bash(npm install:*)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(npm run seed:reset:*)",
+      "Bash(npx tsx:*)",
+      "Bash(find:*)",
+      "Bash(if exist backend-startup.log del backend-startup.log)",
+      "Bash(if exist dev-output.log del dev-output.log)",
+      "Bash(if exist seed-output.log del seed-output.log)",
+      "Bash(if exist seed_output.txt del seed_output.txt)",
+      "Bash(if exist server-5001.log del server-5001.log)",
+      "Bash(if exist server-debug.log del server-debug.log)",
+      "Bash(if exist server-direct.log del server-direct.log)",
+      "Bash(if exist logscombined.log del logscombined.log)",
+      "Bash(if exist logserror.log del logserror.log)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []

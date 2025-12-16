@@ -192,7 +192,7 @@ const seedData = async (): Promise<void> => {
     // Subcategorías de Servicios
     logger.info('Creando subcategorías de Servicios...');
     await Category.create({ code: 'SER-PRO', name: 'Profesionales', parent: serviceCat._id });
-    await Category.create({ code: 'SER-MAN', name: 'Mantenimiento', parent: serviceCat._id });
+    await Category.create({ code: 'SER-MAN', name: 'Servicios de Mantenimiento', parent: serviceCat._id });
     logger.info('✓ Subcategorías de Servicios creadas');
 
     // Subcategorías de Mantenimiento
